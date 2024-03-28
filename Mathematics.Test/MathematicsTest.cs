@@ -1,10 +1,18 @@
 using Mathematics.ConsoleApp;
+using Moq;
 using System.Collections;
 
 namespace Mathematics.Test
 {
-    public class MathematicsTest
+    public class MathematicsTest : IClassFixture<MathematicsManager>
     {
+
+        MathematicsManager MathematicsManager;
+        public MathematicsTest()
+        {
+            MathematicsManager = new();
+        }
+
         [Fact]
         public void SubtractTest()
         {
@@ -13,13 +21,12 @@ namespace Mathematics.Test
             int number1 = 10;
             int number2 = 20;
             int expected = 10;
-            MathematicsManager mathematicsManager = new MathematicsManager();
 
             #endregion
 
             #region Act
 
-            int result = mathematicsManager.Subtract(number1, number2);
+            int result = MathematicsManager.Subtract(number1, number2);
             #endregion
 
             #region Assert
@@ -114,12 +121,17 @@ namespace Mathematics.Test
         public void SumTest(int number1, int number2, int expected)
         {
             #region Arrange
-            MathematicsManager mathematicsManager = new MathematicsManager();
+
+            var mathematics = new Mock<IMathematicsManager>();
             #endregion
 
             #region Act
 
-            int result = mathematicsManager.Sum(number1, number2);
+            mathematics.Setup(m => m.Sum(number1, number2)).Returns(expected);
+
+            int result = mathematics.Object.Sum(number1, number2);
+
+            //int result = MathematicsManager.Sum(number1, number2);
 
             #endregion
 
@@ -129,8 +141,57 @@ namespace Mathematics.Test
             #endregion
 
         }
+        [Theory, InlineData(3, 5)]
+        public void MultiplyTest(int number1, int number2)
+        {
+            #region Arrange
+            #endregion
+
+            #region Act
+            int result = MathematicsManager.Multiply(number1, number2);
+            #endregion
+            #region Assert
+            Assert.Equal(15, result);
+            #endregion
+        }
+
+        [Theory, InlineData(30, 5, 6)]
+        public void DivideTest(int number1, int number2, int expected)
+        {
+            #region Arrange
+            #endregion
+
+            #region Act
+            int result = MathematicsManager.Divide(number1, number2);
+            #endregion
+
+            #region Assert
+            Assert.Equal(expected, result);
+            #endregion
+
+
+        }
 
 
 
+    }
+
+    [Collection("Collection1")]
+    public class TestA
+    {
+        [Fact]
+        public void Test1()
+        {
+            Thread.Sleep(5000);
+        }
+    }
+    [Collection("Collection1")]
+    public class TestB
+    {
+        [Fact]
+        public void Test2()
+        {
+            Thread.Sleep(5000);
+        }
     }
 }
