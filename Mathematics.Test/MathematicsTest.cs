@@ -1,4 +1,4 @@
-using Mathematics.ConsoleApp;
+﻿using Mathematics.ConsoleApp;
 using Moq;
 using System.Collections;
 
@@ -140,6 +140,11 @@ namespace Mathematics.Test
             Assert.Equal(expected, result);
             #endregion
 
+            //Verify
+            //Bir metodun kaç kez çalıştığını test edebilmek için kullanılan metottur.
+            //AtLeast() en az kaç kere çalışması gerektiğini belirtiyoruz.
+            mathematics.Verify(x => x.Sum(number1, number2), Times.AtLeast(1));
+
         }
         [Theory, InlineData(3, 5)]
         public void MultiplyTest(int number1, int number2)
@@ -155,23 +160,74 @@ namespace Mathematics.Test
             #endregion
         }
 
-        [Theory, InlineData(30, 5, 6)]
-        public void DivideTest(int number1, int number2, int expected)
+        [Fact]
+        public void DivideTest()
         {
+            //Throws
+            //Bir metodun fırlattığı exception’ı test edebilmemizi sağlayan metottur.
+
             #region Arrange
+            var matchematicsMock = new Mock<IMathematicsManager>();
+
             #endregion
 
             #region Act
-            int result = MathematicsManager.Divide(number1, number2);
+            matchematicsMock.Setup(x => x.Divide(1, 0)).Throws<DivideByZeroException>();
+
             #endregion
 
             #region Assert
-            Assert.Equal(expected, result);
+            var exception = Assert.Throws<DivideByZeroException>(() => matchematicsMock.Object.Divide(1, 0));
             #endregion
 
 
         }
 
+        [Fact]
+        public void SumTestWithIsAny()
+        {
+            int result = 0;
+
+            //‘Setup’ edilen ‘Sum’ fonksiyonunun parametreleri ‘It.IsAny < T >’ ile işaretlenerek optisonel olarak int türünden değerler alacağı bildirilmekte ve ‘Callback’ fonksiyonu ile bu alınan değerler üzerinde yapılacak işlem belirtilmektedir.Burada gelen değerler toplanmakta ve sonuçları ‘result’ değişkenine atanmaktadır. Bu aşamadan sonra artık ‘Object’ üzerinden çağrılan her bir ‘Sum’ fonksiyonu, verilen değerlere göre ‘result’ değişkenine işlem sonucunu assign edecektir.Haliyle her bir Assert bu sonuçlara göre değerlendirilmektedir.
+
+            var mathematics = new Mock<IMathematicsManager>();
+            mathematics.Setup(x => x.Sum(It.IsAny<int>(), It.IsAny<int>())).Callback<int, int>((number1, number2) => result = number1 + number2);
+
+            mathematics.Object.Sum(1, 2);
+            Assert.Equal(3, result);
+
+            mathematics.Object.Sum(5, 5);
+            Assert.Equal(10, result);
+
+            mathematics.Object.Sum(15, 5);
+            Assert.Equal(20, result);
+
+            mathematics.Object.Sum(23, 2);
+            Assert.Equal(25, result);
+        }
+        [Fact]
+        public void SumTestWithItIsInRange()
+        {
+            int result = 0;
+
+            var mathematics = new Mock<IMathematicsManager>();
+            //Moq.Range.Inclusive : 1 ile 10'da dahil.
+            //Moq.Range.Exclusive : 1 ile 10'da dahil değil.
+
+            mathematics.Setup(x => x.Sum(It.IsInRange<int>(1, 10, Moq.Range.Inclusive), It.IsInRange<int>(1, 10, Moq.Range.Inclusive))).Callback<int,int>((number1, number2) => result = number1 + number2);
+
+            mathematics.Object.Sum(1, 2);
+            Assert.Equal(3, result); //Ok
+
+            mathematics.Object.Sum(5, 5);
+            Assert.Equal(10, result); //Ok
+
+            mathematics.Object.Sum(15, 5);
+            Assert.Equal(20, result); //Fail
+
+            mathematics.Object.Sum(23, 2);
+            Assert.Equal(25, result); //Fail
+        }
 
 
     }

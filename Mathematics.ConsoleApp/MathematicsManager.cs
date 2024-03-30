@@ -5,6 +5,7 @@
     {
 
         int Sum(int number1, int number2);
+        int Divide(int number1,int number2);
     }
     public class MathematicsManager : IMathematicsManager
     {
